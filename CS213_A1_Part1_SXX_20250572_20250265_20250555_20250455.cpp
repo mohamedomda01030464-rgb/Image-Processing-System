@@ -5,10 +5,126 @@
 
 using namespace std;
 
-void Grayscale(){
+void saveImage(Image& currentImage, string& currentPath, bool& isModified){
+	int saveChoice;
+	cout << "\n--- Save Options ---\n";
+	cout << "1- Save : " << currentPath << ")\n";
+	cout << "2- Save As\n";
+	cout << "Choose Option: ";
+	cin >> saveChoice;
 	
+	string targetPath = currentPath;
+	
+	if (saveChoice == 2){
+		cout << "Enter new image path/filename (e.g., output.png): ";
+		cin >> targetPath;
+	}else if (saveChoice != 1){
+		cout << "Invalid choice! Defaulting to original file path.\n";
+	}
+	bool savedSuccessfully = false;
+	while(!savedSuccessfully){
+		try {
+			if (currentImage.saveImage(targetPath)){
+				cout << "Emage saved successfully to: " << targetPath << "\n\n";
+				isModified = false;
+				savedSuccessfully = true;
+				currentPath = targetPath;
+			}
+		}
+		catch (const invalid_argument& e){
+			cout << "Error saving image: " << e.what() << "\n\n";
+			cout << "Please enter a valid target path/filename (or type '0' to cancel): ";
+			cin >> targetPath;
+			if (targetPath == "0"){
+				cout << "Saved operation canceled.\n\n";
+				break;
+			}
+		
+		}
+	}
 }
 
+void loadNewImage(Image& currentImage, string& currentPath, bool& isImageLoaded, bool& isModified){
+	if (isModified){
+		char ans;
+		cout << "The current image has unsaved changes. Do you want to save it first? (y/n)";
+		cin >> ans;
+		if (ans == 'y' || ans == 'Y'){
+			saveImage(currentImage,currentPath,isModified);
+		}
+	}
+	string newPath = "";
+	bool loadedSuccessfully = false;
+	while(!loadedSuccessfully){
+		cout << "Please enter the new image path ";
+		cin >> newPath;
+		try{
+			if (currentImage.loadNewImage(newPath)){
+				loadedSuccessfully = true;
+				currentPath = newPath;
+				isModified = false;
+				isImageLoaded = true;
+				cout << "New image loaded successfully!\n\n";
+			}
+		}
+		catch (const invalid_argument& e){
+			cout << "Error: " << e.what() << ". Please try again.\n";
+		}
+	}
+}
+
+void exit(Image& currentImage, string& currentPath, bool& isModified){
+	if (isModified){
+		char ans;
+		cout << "\nYou have unsaved changes! Do you want to save before exiting? (y/n)";
+		cin >> ans;
+		if (ans == 'y' || ans == 'Y'){
+			saveImage(currentImage, currentPath, isModified);
+		}
+	}
+	cout << "\nExiting program... Goodbye!\n";
+}
+
+void Invert(Image& currentImage) {
+	
+    for (int i = 0; i < currentImage.width; i++) {
+        for (int j = 0; j < currentImage.height; j++) {
+            for (int k = 0; k < currentImage.channels; k++) {
+
+                currentImage(i, j, k) = 255 - currentImage(i, j, k);
+
+            }
+        }
+    }
+    cout << "Done (Invert Filter)\n";
+}
+
+void applyFilter(Image& currentImage, bool& isModified){
+	int filterChoice = 0;
+	while(filterChoice != 2){
+		cout << "\n==============================\n";
+		cout << "--- Filters Menu ---\n";
+		cout << "1- Invert Filter\n";
+		cout << "2- Back to Main Menu\n";
+		cout << "==============================\n";
+		cout << "Choose filter number: ";
+		cin >> filterChoice;
+		switch(filterChoice){
+			case 1:
+				cout << "\nApplying Invert Filter...\n";
+				Invert(currentImage);
+				isModified = true;
+				cout << "Invert applied successfully!\n";
+				break;
+			case 2:
+				cout << "Returning to Main Menu...\n";
+				break;
+			default:
+				cout << "Invalid choice! Please select a valid filter number.\n";
+				break;
+		}
+	}
+}
 
 int main() {
     Image currentImage;
@@ -31,42 +147,32 @@ int main() {
             isImageLoaded = false;
         }
     }
-    cout << "1-Load Image\n";
-    cout << "2-Apply Filters\n";
-    cout << "3-Save Image\n";
-    cout << "4-Exit\n";
-    int choose;
-    cout << "choose the service number";
-    cin >> choose;
+    int choose = 0;
     while(choose != 4){
+    	cout << "===========================\n";
+        cout << "1- Load New Image\n";
+        cout << "2- Apply Filters\n";
+        cout << "3- Save Image\n";
+        cout << "4- Exit\n";
+        cout << "===========================\n";
+        cout << "Choose service number: ";
+        cin >> choose;
 	    switch(choose){
 	    	case 1:
-	    		if ()
-		    	while (!isImageLoaded) {
-			        cout << "Please enter image path: ";
-			        cin >> currentPath;
-			
-			        try {
-			            if (currentImage.loadNewImage(currentPath)) {
-			                isImageLoaded = true;
-			                cout << "Image loaded successfully!\n";
-			            }
-			        } 
-			        catch (const invalid_argument& e) {
-			            cout << "Error: " << e.what() << ". Please try again.\n";
-			            isImageLoaded = false;
-			        }
-			    }
+	    		loadNewImage(currentImage, currentPath, isImageLoaded, isModified);
 	    		break;
 	    	case 2:
-	    		
+	    		applyFilter(currentImage, isModified);
 	    		break;
 	    		
 	    	case 3:
-	    		
+	    		saveImage(currentImage, currentPath, isModified);
 	    		break;
+	    	case 4:
+				exit(currentImage, currentPath, isModified);
+				break;
 	    	default:
-	    		cout << "Error inputs, Please choose valid number";
+	    		cout << "\nInvalid choice! Please select a valid number from 1 to 4.\n\n";
 				break;
 		}
 	}

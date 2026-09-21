@@ -5,7 +5,7 @@
 
 using namespace std;
 
-void saveImage(Image& currentImage, string& currentPath, bool& isModified){
+void handleSaveImage(Image& currentImage, string& currentPath, bool& isModified){
 	int saveChoice;
 	cout << "\n--- Save Options ---\n";
 	cout << "1- Save : " << currentPath << ")\n";
@@ -44,13 +44,13 @@ void saveImage(Image& currentImage, string& currentPath, bool& isModified){
 	}
 }
 
-void loadNewImage(Image& currentImage, string& currentPath, bool& isImageLoaded, bool& isModified){
+void handleLoadNewImage(Image& currentImage, string& currentPath, bool& isImageLoaded, bool& isModified){
 	if (isModified){
 		char ans;
 		cout << "The current image has unsaved changes. Do you want to save it first? (y/n)";
 		cin >> ans;
 		if (ans == 'y' || ans == 'Y'){
-			saveImage(currentImage,currentPath,isModified);
+			handleSaveImage(currentImage,currentPath,isModified);
 		}
 	}
 	string newPath = "";
@@ -73,19 +73,19 @@ void loadNewImage(Image& currentImage, string& currentPath, bool& isImageLoaded,
 	}
 }
 
-void exit(Image& currentImage, string& currentPath, bool& isModified){
+void handleExit(Image& currentImage, string& currentPath, bool& isModified){
 	if (isModified){
 		char ans;
 		cout << "\nYou have unsaved changes! Do you want to save before exiting? (y/n)";
 		cin >> ans;
 		if (ans == 'y' || ans == 'Y'){
-			saveImage(currentImage, currentPath, isModified);
+			handleSaveImage(currentImage, currentPath, isModified);
 		}
 	}
 	cout << "\nExiting program... Goodbye!\n";
 }
 
-void Invert(Image& currentImage) {
+void invert(Image& currentImage) {
 	
     for (int i = 0; i < currentImage.width; i++) {
         for (int j = 0; j < currentImage.height; j++) {
@@ -99,24 +99,69 @@ void Invert(Image& currentImage) {
     cout << "Done (Invert Filter)\n";
 }
 
-void applyFilter(Image& currentImage, bool& isModified){
+void darken(Image& currentImage) {
+
+    for (int i = 0; i < currentImage.width; i++) {
+        for (int j = 0; j < currentImage.height; j++) {
+            for (int k = 0; k < currentImage.channels; k++) {
+
+                currentImage(i, j, k) = currentImage(i, j, k)*0.5;
+
+            }
+        }
+    }
+    cout << "Done (Darken Filter)\n";
+}
+
+void lighten(Image& currentImage) {
+    for (int i = 0; i < currentImage.width; i++) {
+        for (int j = 0; j < currentImage.height; j++) {
+            for (int k = 0; k < currentImage.channels; k++) {
+
+              int newvalue= currentImage(i, j, k) * 1.5;
+              if (newvalue > 255) {
+                  newvalue = 255;
+              }
+              currentImage(i, j, k) = newvalue;
+
+            }
+        }
+    }
+    cout << "Done (Lighten Filter)\n";
+}
+
+void handleApplyFilter(Image& currentImage, bool& isModified){
 	int filterChoice = 0;
-	while(filterChoice != 2){
+	while(filterChoice != 4){
 		cout << "\n==============================\n";
 		cout << "--- Filters Menu ---\n";
 		cout << "1- Invert Filter\n";
-		cout << "2- Back to Main Menu\n";
+		cout << "2- Darken Filter\n";
+		cout << "3- Lighten Filter\n";
+		cout << "4- Back to Main Menu\n";
 		cout << "==============================\n";
 		cout << "Choose filter number: ";
 		cin >> filterChoice;
 		switch(filterChoice){
 			case 1:
 				cout << "\nApplying Invert Filter...\n";
-				Invert(currentImage);
+				invert(currentImage);
 				isModified = true;
 				cout << "Invert applied successfully!\n";
 				break;
 			case 2:
+				cout << "\nApplying Darken Filter...\n";
+				darken(currentImage);
+				isModified = true;
+				cout << "Darken applied successfully!\n";
+				break;
+			case 3:
+				cout << "\nApplying Lighten Filter...\n";
+				lighten(currentImage);
+				isModified = true;
+				cout << "Lighten applied successfully!\n";
+				break;
+			case 4:
 				cout << "Returning to Main Menu...\n";
 				break;
 			default:
@@ -159,17 +204,17 @@ int main() {
         cin >> choose;
 	    switch(choose){
 	    	case 1:
-	    		loadNewImage(currentImage, currentPath, isImageLoaded, isModified);
+	    		handleLoadNewImage(currentImage, currentPath, isImageLoaded, isModified);
 	    		break;
 	    	case 2:
-	    		applyFilter(currentImage, isModified);
+	    		handleApplyFilter(currentImage, isModified);
 	    		break;
 	    		
 	    	case 3:
-	    		saveImage(currentImage, currentPath, isModified);
+	    		handleSaveImage(currentImage, currentPath, isModified);
 	    		break;
 	    	case 4:
-				exit(currentImage, currentPath, isModified);
+				handleExit(currentImage, currentPath, isModified);
 				break;
 	    	default:
 	    		cout << "\nInvalid choice! Please select a valid number from 1 to 4.\n\n";

@@ -163,9 +163,75 @@ void infrared(Image& currentImage){
 	cout << "Done (Samurais Filter Applied!)\n";
 }
 
+void addFrame(Image& currentImage){
+	int choice ;
+	cout << "\n--- Frame Filter Menu ---\n";
+	cout << "1- Simple Frame\n";
+	cout << "2- Fancy Frame\n";
+	cout << "Enter Your Choice (1 or 2): ";
+	cin >> choice;
+	
+	int width = currentImage.width;
+	int height = currentImage.height;
+	
+	if (choice == 1){
+		int frameSize, colorChoice;
+		cout << "Enter frame thickness (from 10 to 50): ";
+		cin >> frameSize;
+		
+		cout << "Select frame color:\n";
+		cout << "1- Blue\n2- Red\n3- Green\n4- White\nChoice: ";
+		cin >> colorChoice;
+		
+		int r = 0 , g = 0 , b = 0;
+		if (colorChoice == 1){r = 0 ; g = 0 ; b = 255;}
+		else if (colorChoice == 2){r = 255 ; g = 0 ; b = 0;}
+		else if (colorChoice == 3){r = 0 ; g = 255 ; b = 0;}
+		else if (colorChoice == 4){r = 255 ; g = 255 ; b = 255;}
+		
+		for (int i = 0 ; i < width ; i++){
+			for (int j = 0 ; j < height ; j++){
+				if (i < frameSize || j < frameSize || i >= width - frameSize || j >= height - frameSize){
+					currentImage(i , j , 0) = r;
+					currentImage(i , j , 1) = g;
+					currentImage(i , j , 2) = b;
+				}
+			}
+		}
+	}
+	else if (choice == 2){
+		int outerSize , innerStripeSize;
+		cout << "Enter outer frame thickness (e.g., 10): ";
+		cin >> outerSize;
+		cout << "Enter inner thickness (e.g., 3): ";
+		cin >> innerStripeSize;
+		
+		int startStripe = outerSize/2 - innerStripeSize/2;
+        int endStripe = outerSize/2 + innerStripeSize/2;
+		for (int j = 0; j < height; j++) {
+            for (int i = 0; i < width; i++) {
+                if (i < outerSize || j < outerSize || i >= width - outerSize || j >= height - outerSize){
+					if ((i >= startStripe && i < endStripe) || (i >= width - endStripe && i < width - startStripe) || (j >= startStripe && j < endStripe) || (j >= height - endStripe && j < height - startStripe)){
+						currentImage(i , j , 0) = 255;
+						currentImage(i , j , 1) = 255;
+						currentImage(i , j , 2) = 255;
+					}
+					else{
+						currentImage(i, j, 0) = 0;
+				        currentImage(i, j, 1) = 100;
+				        currentImage(i, j, 2) = 255;
+					}
+				}
+				
+            }
+        }
+	}
+	cout << "\nDone (Frame Added Successfully!)\n";
+}
+
 void handleApplyFilter(Image& currentImage, bool& isModified){
 	int filterChoice = 0;
-	while(filterChoice != 6){
+	while(filterChoice != 7){
 		cout << "\n==============================\n";
 		cout << "--- Filters Menu ---\n";
 		cout << "1- Invert Filter\n";
@@ -173,7 +239,8 @@ void handleApplyFilter(Image& currentImage, bool& isModified){
 		cout << "3- Lighten Filter\n";
 		cout << "4- Blur Filter\n";
 		cout << "5- Infrared Filter\n";
-		cout << "6- Back to Main Menu\n";
+		cout << "6- AddFrame Filter\n";
+		cout << "7- Back to Main Menu\n";
 		cout << "==============================\n";
 		cout << "Choose filter number: ";
 		cin >> filterChoice;
@@ -203,12 +270,18 @@ void handleApplyFilter(Image& currentImage, bool& isModified){
 				cout << "Blur applied successfully!\n";
 				break;
 			case 5:
-				cout << "\nApplying Samurais Filter...\n";
+				cout << "\nApplying Infrared Filter...\n";
 				infrared(currentImage);
 				isModified = true;
 				cout << "Infrared applied successfully!\n";
 				break;
 			case 6:
+				cout << "\nApplying AddFrame Filter...\n";
+				addFrame(currentImage);
+				isModified = true;
+				cout << "AddFrame applied successfully!\n";
+				break;
+			case 7:
 				cout << "Returning to Main Menu...\n";
 				break;
 			default:

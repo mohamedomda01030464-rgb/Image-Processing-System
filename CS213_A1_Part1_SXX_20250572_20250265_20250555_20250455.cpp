@@ -58,6 +58,10 @@ void handleLoadNewImage(Image& currentImage, string& currentPath, bool& isImageL
 	while(!loadedSuccessfully){
 		cout << "Please enter the new image path ";
 		cin >> newPath;
+		if (newPath == "0"){
+			cout << "Loading new image canceled.\n\n";
+			break;
+		}
 		try{
 			if (currentImage.loadNewImage(newPath)){
 				loadedSuccessfully = true;
@@ -130,15 +134,46 @@ void lighten(Image& currentImage) {
     cout << "Done (Lighten Filter)\n";
 }
 
+// filter blur not completed
+void blur(Image& currentImage){
+	Image temp = currentImage;
+	for (int i = 1 ; i < currentImage.width - 1 ; i++){
+		for (int j =  1; j < currentImage.height - 1 ; j++){
+			for (int k = 0 ; k < currentImage.channels ; k++){
+				temp(i,j,k) = (currentImage(i-1,j-1,k) + currentImage(i,j-1,k) + currentImage(i+1,j-1,k) + currentImage(i-1,j,k) + currentImage(i,j,k) + currentImage(i+1,j,k) + currentImage(i-1,j+1,k) + currentImage(i,j+1,k) + currentImage(i+1,j+1,k))/9;
+			}
+		}
+	}
+	currentImage = temp;
+	cout << "Done (Blur Filter)\n";
+}
+
+void infrared(Image& currentImage){
+	for (int i = 0 ; i < currentImage.width ; i++){
+		for (int j = 0 ; j < currentImage.height ; j++){
+			int r = currentImage(i , j , 0);
+			int g = currentImage(i , j , 1);
+			int b = currentImage(i , j , 2);
+			
+			currentImage(i , j , 0) = 255;
+			currentImage(i , j , 1) = 255 - g;
+			currentImage(i , j , 2) = 255 - b;
+		}
+	}
+	cout << "Done (Samurais Filter Applied!)\n";
+}
+
 void handleApplyFilter(Image& currentImage, bool& isModified){
 	int filterChoice = 0;
-	while(filterChoice != 4){
+	while(filterChoice != 6){
 		cout << "\n==============================\n";
 		cout << "--- Filters Menu ---\n";
 		cout << "1- Invert Filter\n";
 		cout << "2- Darken Filter\n";
 		cout << "3- Lighten Filter\n";
-		cout << "4- Back to Main Menu\n";
+		cout << "4- Blur Filter\n";
+		cout << "5- Infrared Filter\n";
+		cout << "6- Back to Main Menu\n";
 		cout << "==============================\n";
 		cout << "Choose filter number: ";
 		cin >> filterChoice;
@@ -162,6 +197,18 @@ void handleApplyFilter(Image& currentImage, bool& isModified){
 				cout << "Lighten applied successfully!\n";
 				break;
 			case 4:
+				cout << "\nApplying Blur Filter...\n";
+				blur(currentImage);
+				isModified = true;
+				cout << "Blur applied successfully!\n";
+				break;
+			case 5:
+				cout << "\nApplying Samurais Filter...\n";
+				infrared(currentImage);
+				isModified = true;
+				cout << "Infrared applied successfully!\n";
+				break;
+			case 6:
 				cout << "Returning to Main Menu...\n";
 				break;
 			default:

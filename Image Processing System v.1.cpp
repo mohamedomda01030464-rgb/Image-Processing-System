@@ -292,6 +292,42 @@ void blackAndWhite(Image& currenImage){
     cout << "Done (BlackAndWhite Filter)" << endl;
 }
 
+void flip(Image& currentImage) {
+    int width = currentImage.width;
+    int height = currentImage.height;
+    int choose;
+	while(choose != 1 && choose != 2){
+		cout << "\n---                                 Flip Filter Menu                                  ---\n\n";
+		cout << "1- Horizontal Flip                     -                        ";
+		cout << "2- Vertical Flip\n\n";
+		cout << "Enter Your Choice (1 or 2): ";
+		cin >> choose;
+		if (choose == 1){
+		    for (int i = 0; i < height; i++) {
+		        for (int j = 0; j < width / 2; j++) {
+		            for (int k = 0; k < currentImage.channels; k++) {
+		                swap(currentImage(j, i, k), currentImage(width - 1 - j, i, k));
+		            }
+		        }
+		    }
+		    cout << "Done (Flip Horizontal Filter)\n";
+		}
+		else if (choose == 2){
+			for (int i = 0; i < height / 2; i++) {
+		        for (int j = 0; j < width; j++) {
+		            for (int k = 0; k < currentImage.channels; k++) {
+		                swap(currentImage(j, i, k), currentImage(j, height - 1 - i, k));
+		            }
+		        }
+		    }
+		    cout << "Done (Flip Vertical Filter)\n";
+		}
+		else {
+			cout << "Invalid Input, Please choose correct number\n";
+		}
+	}
+}
+
 void rotate(Image& currentImage){
     int oldWidth = currentImage.width;
     int oldHeight = currentImage.height;
@@ -368,7 +404,7 @@ void rotate(Image& currentImage){
 
 void handleApplyFilter(Image& currentImage, bool& isModified){
 	int filterChoice = 0;
-	while(filterChoice != 9){
+	while(filterChoice != 10){
 		cout << "\n============================================================================================\n\n";
 		cout << "---                                     Filters Menu                                     ---\n\n";
 		cout << "1- Invert Filter                       -                        ";
@@ -378,8 +414,9 @@ void handleApplyFilter(Image& currentImage, bool& isModified){
 		cout << "5- AddFrame Filter                     -                        ";
 		cout << "6- GrayScale Filter\n\n";
 		cout << "7- BlackAndWhite Filter                -                        ";
-		cout << "8- Rotate\n\n";
-		cout << "9- Back to Main Menu\n";
+		cout << "8- Rotate FIlter\n\n";
+		cout << "9- Flip Filter                         -                        ";
+		cout << "10- Back to Main Menu\n";
 		cout << "============================================================================================\n\n";
 		cout << "Choose filter number: ";
 		cin >> filterChoice;
@@ -433,6 +470,12 @@ void handleApplyFilter(Image& currentImage, bool& isModified){
 				cout << "Rotate applied successfully!\n";
 				break;
 			case 9:
+				cout << "\nApplying Flip Filter...\n";
+				flip(currentImage);
+				isModified = true;
+				cout << "Flip applied successfully!\n";
+				break;
+			case 10:
 				cout << "Returning to Main Menu...\n";
 				break;
 			default:

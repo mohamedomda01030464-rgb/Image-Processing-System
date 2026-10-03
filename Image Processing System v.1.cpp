@@ -147,18 +147,24 @@ void darkenAndLighten(Image& currentImage) {
     
 }
 
-
-// filter blur not completed
 void blur(Image& currentImage){
-	Image temp = currentImage;
-	for (int i = 1 ; i < currentImage.width - 1 ; i++){
-		for (int j =  1; j < currentImage.height - 1 ; j++){
-			for (int k = 0 ; k < currentImage.channels ; k++){
-				temp(i,j,k) = (currentImage(i-1,j-1,k) + currentImage(i,j-1,k) + currentImage(i+1,j-1,k) + currentImage(i-1,j,k) + currentImage(i,j,k) + currentImage(i+1,j,k) + currentImage(i-1,j+1,k) + currentImage(i,j+1,k) + currentImage(i+1,j+1,k))/9;
+	int pass;
+	cout << "\nChoose Blur Degree: ";
+	cin >> pass;
+	cout << "\n";
+	for (int c = 1 ; c <= pass ; c++){
+		Image temp = currentImage;
+		for (int i = 1 ; i < currentImage.width - 1 ; i++){
+			for (int j =  1; j < currentImage.height - 1 ; j++){
+				for (int k = 0 ; k < currentImage.channels ; k++){
+					int sum = (currentImage(i-1,j-1,k) + currentImage(i,j-1,k) + currentImage(i+1,j-1,k) + currentImage(i-1,j,k) + currentImage(i,j,k) + currentImage(i+1,j,k) + currentImage(i-1,j+1,k) + currentImage(i,j+1,k) + currentImage(i+1,j+1,k));
+					temp(i,j,k) = sum/9;
+				}
 			}
 		}
+		currentImage = temp;
+		cout << "Pass " << c << " Completed!\n";
 	}
-	currentImage = temp;
 	cout << "Done (Blur Filter)\n";
 }
 

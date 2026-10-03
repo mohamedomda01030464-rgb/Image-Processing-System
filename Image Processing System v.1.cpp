@@ -402,9 +402,33 @@ void rotate(Image& currentImage){
 	    
 }
 
+void reSize(Image& currentImage){
+	int oldWidth = currentImage.width;
+	int oldHeight = currentImage.height;
+	int newWidth , newHeight;
+	cout << "Width: " ;
+	cin >> newWidth;
+	cout << "Height: ";
+	cin >> newHeight;
+	Image newImage(newWidth , newHeight);
+	float facHeight = (float) oldHeight / newHeight;
+	float facWidth = (float) oldWidth / newWidth;
+	for (int i = 0 ; i < newWidth ; i++){
+		for (int j = 0 ; j < newHeight ; j++){
+			int I = min((int) (i * facWidth) , oldWidth - 1);
+			int J = min((int) (j * facHeight), oldHeight - 1);
+			newImage(i,j,0) = currentImage(I,J,0);
+			newImage(i,j,1) = currentImage(I,J,1);
+			newImage(i,j,2) = currentImage(I,J,2);
+		}
+	}
+	currentImage = newImage;
+	cout << "Done (ReSize Filter)\n";
+}
+
 void handleApplyFilter(Image& currentImage, bool& isModified){
 	int filterChoice = 0;
-	while(filterChoice != 10){
+	while(filterChoice != 11){
 		cout << "\n============================================================================================\n\n";
 		cout << "---                                     Filters Menu                                     ---\n\n";
 		cout << "1- Invert Filter                       -                        ";
@@ -416,7 +440,8 @@ void handleApplyFilter(Image& currentImage, bool& isModified){
 		cout << "7- BlackAndWhite Filter                -                        ";
 		cout << "8- Rotate FIlter\n\n";
 		cout << "9- Flip Filter                         -                        ";
-		cout << "10- Back to Main Menu\n";
+		cout << "10- ReSize Filter\n\n";
+		cout << "11- Back to Main Menu\n";
 		cout << "============================================================================================\n\n";
 		cout << "Choose filter number: ";
 		cin >> filterChoice;
@@ -476,6 +501,12 @@ void handleApplyFilter(Image& currentImage, bool& isModified){
 				cout << "Flip applied successfully!\n";
 				break;
 			case 10:
+				cout << "\nApplying ReSize Filter...\n";
+				reSize(currentImage);
+				isModified = true;
+				cout << "ReSize applied successfully!\n";
+				break;
+			case 11:
 				cout << "Returning to Main Menu...\n";
 				break;
 			default:
@@ -492,7 +523,6 @@ int main() {
     bool isModified = false;
 	
     while (!isImageLoaded) {
-    	cout << "\n---                          Welcome to Image Processing System                          ---\n\n";
         cout << "Please enter image path: ";
         cin >> currentPath;
 

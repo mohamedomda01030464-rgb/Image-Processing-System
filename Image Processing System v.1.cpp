@@ -1,3 +1,23 @@
+// This file is designed to applying different filters on images and called Image Processing System
+
+/* 
+---                Team Works                ---
+
+Name: Mohamed Adel         ID: 20250572
+Name: Ziad Waleed          ID: 20250265
+Name: Amr Maher            ID: 20250455
+Name: Mohamed Hassaan      ID: 20250555
+*/
+
+/*
+ ---            Whose made filters            ---
+
+mohamed adel      -> Inferared , AddFrame
+ziad waleed       -> GrayScale , Flip
+amr maher         -> Rotate , BlackAndWhite
+mohamed hassaan   -> Invert , DarkenAndLighten
+*/
+
 #include <iostream>
 #include <string>
 #include <stdexcept>
@@ -432,9 +452,60 @@ void reSize(Image& currentImage){
 	cout << "Done (ReSize Filter)\n";
 }
 
+void crop(Image& currentImage) {
+	int x, y, w, h;
+	cout << "Current Dimensions: " << currentImage.width << " x " << currentImage.height << "\n";
+
+	cout << "Enter starting point X (upper left corner): ";
+	cin >> x;
+	cout << "Enter starting point Y (upper left corner): ";
+	cin >> y;
+	cout << "Enter crop Width (W): ";
+	cin >> w;
+	cout << "Enter crop Height (H): ";
+	cin >> h;
+
+	if (x < 0 || y < 0 || w <= 0 || h <= 0 || (x + w) > currentImage.width || (y + h) > currentImage.height) {
+		cout << "Error: Crop dimensions are out of bounds or invalid!\n";
+	}
+	else{
+		Image croppedImage(w, h);
+	
+		for (int i = 0; i < w; i++) {
+			for (int j = 0; j < h; j++) {
+				for (int k = 0; k < currentImage.channels; k++) {
+					croppedImage(i, j, k) = currentImage(x + i, y + j, k);
+				}
+			}
+		}
+	
+		currentImage = croppedImage;
+		cout << "Done (Crop Filter)\n";
+	}
+}
+
+void wanoPurple(Image& currentImage) {
+	for (int i = 0; i < currentImage.width; i++) {
+		for (int j = 0; j < currentImage.height; j++) {
+			int r = currentImage(i, j, 0);
+			int g = currentImage(i, j, 1);
+			int b = currentImage(i, j, 2);
+
+			int newR = min(255, (int)(r * 1.1));
+			int newG = (int)(g * 0.5);
+			int newB = min(255, (int)(b * 1.1));
+
+			currentImage(i, j, 0) = newR;
+			currentImage(i, j, 1) = newG;
+			currentImage(i, j, 2) = newB;
+		}
+	}
+	cout << "Done (WanoPurple Filter)\n";
+}
+
 void handleApplyFilter(Image& currentImage, bool& isModified){
 	int filterChoice = 0;
-	while(filterChoice != 11){
+	while(filterChoice != 13){
 		cout << "\n============================================================================================\n\n";
 		cout << "---                                     Filters Menu                                     ---\n\n";
 		cout << "1- Invert Filter                       -                        ";
@@ -447,7 +518,9 @@ void handleApplyFilter(Image& currentImage, bool& isModified){
 		cout << "8- Rotate FIlter\n\n";
 		cout << "9- Flip Filter                         -                        ";
 		cout << "10- ReSize Filter\n\n";
-		cout << "11- Back to Main Menu\n";
+		cout << "11- Crop Filter                        -                        ";
+		cout << "12- WanoPurple Filter\n\n";
+		cout << "13- Back to Main Menu\n\n";
 		cout << "============================================================================================\n\n";
 		cout << "Choose filter number: ";
 		cin >> filterChoice;
@@ -513,6 +586,18 @@ void handleApplyFilter(Image& currentImage, bool& isModified){
 				cout << "ReSize applied successfully!\n";
 				break;
 			case 11:
+				cout << "\nApplying Crop Filter...\n";
+				crop(currentImage);
+				isModified = true;
+				cout << "Crop applied successfully!\n";
+				break;
+			case 12:
+				cout << "\nApplying WanoPurple Filter...\n";
+				wanoPurple(currentImage);
+				isModified = true;
+				cout << "WanoPurple applied successfully!\n";
+				break;
+			case 13:
 				cout << "Returning to Main Menu...\n";
 				break;
 			default:

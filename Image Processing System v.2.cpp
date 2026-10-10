@@ -3,19 +3,25 @@
 /* 
 ---                Team Works                ---
 
-Name: Mohamed Adel         ID: 20250572
-Name: Ziad Waleed          ID: 20250265
-Name: Amr Maher            ID: 20250455
-Name: Mohamed Hassaan      ID: 20250555
+Name: Mohamed Adel         ID: 20250572    S19 , S20
+Name: Ziad Waleed          ID: 20250265    S19 , S20
+Name: Amr Maher            ID: 20250455    S19 , S20
+Name: Mohamed Hassaan      ID: 20250555	   S19 , S20
 */
 
 /*
  ---            Whose made filters            ---
 
-mohamed adel      -> Inferared , AddFrame
-ziad waleed       -> GrayScale , Flip
-amr maher         -> Rotate , BlackAndWhite
-mohamed hassaan   -> Invert , DarkenAndLighten
+1. Mohamed Adel       ->	  4 , 8 , 12 , 16
+2. Ziad Waleed        ->      1 , 5 , 9 , 13
+3. Amr Maher          ->      2 , 6 , 10 , 14
+4. Mohamed Hassaan    ->      3 , 7 , 11 , 15
+
+1.	Image Skewing Filter made by Mohamed Adel & Ziad Waleed & Amr Maher
+2.	Oil painting Filter made by Amr Maher & Mohamed Hassaan & Amr maher
+3.	GUI is made by all members
+
+
 */
 
 #include <iostream>
@@ -647,89 +653,213 @@ void cinema(Image& img) {
     cout << "Done (Old TV Filter)\n";
 }
 
+void resizeTo(Image& img, int newWidth, int newHeight) {
+    Image result(newWidth, newHeight);
+    float facWidth = (float)img.width / newWidth;
+    float facHeight = (float)img.height / newHeight;
+    for (int i = 0; i < newWidth; i++) {
+        for (int j = 0; j < newHeight; j++) {
+            int I = min((int)(i * facWidth), img.width - 1);
+            int J = min((int)(j * facHeight), img.height - 1);
+            for (int k = 0; k < 3; k++)
+                result(i, j, k) = img(I, J, k);
+        }
+    }
+    img = result;
+}
+
+void mergeImages(Image& currentImage) {
+    Image secondImage;
+    string path;
+    bool loaded = false;
+
+    while (!loaded) {
+        cout << "\nEnter the path of the second image (or 0 to cancel): ";
+        cin >> path;
+        if (path == "0") {
+            cout << "Merge canceled.\n";
+            return;
+        }
+        try {
+            if (secondImage.loadNewImage(path)) {
+                loaded = true;
+                cout << "Second image loaded successfully!\n";
+            }
+        }
+        catch (const invalid_argument& e) {
+            cout << "Error: " << e.what() << ". Please try again.\n";
+        }
+    }
+
+    Image a = currentImage;
+    Image b = secondImage;
+    int newWidth, newHeight;
+
+    if (a.width == b.width && a.height == b.height) {
+        newWidth = a.width;
+        newHeight = a.height;
+    }
+    else {
+        int choice = 0;
+        while (choice < 1 || choice > 3) {
+            cout << "\nThe images have different sizes:\n";
+            cout << "1- Resize to the biggest width and height\n";
+            cout << "2- Merge the common area only\n";
+            cout << "3- Place the second image on the first at a chosen position\n";
+            cout << "Choice: ";
+            cin >> choice;
+        }
+
+        if (choice == 3) {
+            int x, y;
+            cout << "Enter X where the second image starts (0 = left edge): ";
+            cin >> x;
+            cout << "Enter Y where the second image starts (0 = top edge): ";
+            cin >> y;
+
+            int startX = max(0, x);
+            int startY = max(0, y);
+            int endX = min(a.width, x + b.width);
+            int endY = min(a.height, y + b.height);
+
+            if (startX >= endX || startY >= endY) {
+                cout << "The images do not overlap! Merge canceled.\n";
+                return;
+            }
+
+            Image result = a;
+            for (int i = startX; i < endX; i++)
+                for (int j = startY; j < endY; j++)
+                    for (int k = 0; k < 3; k++)
+                        result(i, j, k) = (a(i, j, k) + b(i - x, j - y, k)) / 2;
+
+            currentImage = result;
+            cout << "Done (Merge Filter)\n";
+            return;
+        }
+
+        if (choice == 1) {
+            newWidth = max(a.width, b.width);
+            newHeight = max(a.height, b.height);
+            resizeTo(a, newWidth, newHeight);
+            resizeTo(b, newWidth, newHeight);
+        }
+        else {
+            newWidth = min(a.width, b.width);
+            newHeight = min(a.height, b.height);
+        }
+    }
+
+    Image result(newWidth, newHeight);
+    for (int i = 0; i < newWidth; i++)
+        for (int j = 0; j < newHeight; j++)
+            for (int k = 0; k < 3; k++)
+                result(i, j, k) = (a(i, j, k) + b(i, j, k)) / 2;
+
+    currentImage = result;
+    cout << "Done (Merge Filter)\n";
+}
+
+void landOfWano(Image& currentImage) {
+    for (int i = 0; i < currentImage.width; i++) {
+        for (int j = 0; j < currentImage.height; j++) {
+            int r = currentImage(i, j, 0) * 1.2;
+            int g = currentImage(i, j, 1) * 1.1;
+            int b = currentImage(i, j, 2) * 0.9;
+
+            currentImage(i, j, 0) = min(255, r);
+            currentImage(i, j, 1) = min(255, g);
+            currentImage(i, j, 2) = min(255, b);
+        }
+    }
+    cout << "Done (Land Of Wano Filter)\n";
+}
+
 void handleApplyFilter(Image& currentImage, bool& isModified){
 	int filterChoice = 0;
-	while(filterChoice != 15){
+	while(filterChoice != 17){
 		cout << "\n============================================================================================\n\n";
 		cout << "---                                     Filters Menu                                     ---\n\n";
-		cout << "1- Invert Filter                       -                        ";
-		cout << "2- Darken or Lighten Filter\n\n";
-		cout << "3- Blur Filter                         -                        ";
-		cout << "4- Infrared Filter\n\n";
-		cout << "5- AddFrame Filter                     -                        ";
-		cout << "6- GrayScale Filter\n\n";
-		cout << "7- BlackAndWhite Filter                -                        ";
-		cout << "8- Rotate FIlter\n\n";
-		cout << "9- Flip Filter                         -                        ";
-		cout << "10- ReSize Filter\n\n";
+		cout << "1- GrayScale Filter\n\n";
+		cout << "2- BlackAndWhite Filter                -                        ";
+		cout << "3- Invert Filter                       -                        ";
+		cout << "4- AddFrame Filter                     -                        ";
+		cout << "5- Flip Filter                         -                        ";
+		cout << "6- Rotate FIlter\n\n";
+		cout << "7- Darken or Lighten Filter\n\n";
+		cout << "8- ReSize Filter\n\n";
+		cout << "9- MergeImage Filter                  -                        ";
+		cout << "10- Detected Filter                    -                        ";
 		cout << "11- Crop Filter                        -                        ";
-		cout << "12- WanoPurple Filter\n\n";
-		cout << "13- Detected Filter                    -                        ";
+		cout << "12- Blur Filter                         -                        ";
+		cout << "13- LandOfWano\n\n";
 		cout << "14- Cinema Filter\n\n";
-		cout << "15- Back to Main Menu\n\n";
+		cout << "15- WanoPurple Filter\n\n";
+		cout << "16- Infrared Filter\n\n";
+		cout << "17- Back to Main Menu\n\n";
 		cout << "============================================================================================\n\n";
 		cout << "Choose filter number: ";
 		cin >> filterChoice;
 		switch(filterChoice){
 			case 1:
-				cout << "\nApplying Invert Filter...\n";
-				invert(currentImage);
-				isModified = true;
-				cout << "Invert applied successfully!\n";
-				break;
-			case 2:
-				cout << "\nApplying Darken or Lighten Filter...\n";
-				darkenAndLighten(currentImage);
-				isModified = true;
-				cout << "Darken or Lighten applied successfully!\n";
-				break;
-			case 3:
-				cout << "\nApplying Blur Filter...\n";
-				blur(currentImage);
-				isModified = true;
-				cout << "Blur applied successfully!\n";
-				break;
-			case 4:
-				cout << "\nApplying Infrared Filter...\n";
-				infrared(currentImage);
-				isModified = true;
-				cout << "Infrared applied successfully!\n";
-				break;
-			case 5:
-				cout << "\nApplying AddFrame Filter...\n";
-				addFrame(currentImage);
-				isModified = true;
-				cout << "AddFrame applied successfully!\n";
-				break;
-			case 6:
 				cout << "\nApplying GrayScale Filter...\n";
 				grayScale(currentImage);
 				isModified = true;
 				cout << "GrayScale applied successfully!\n";
 				break;
-			case 7:
+			case 2:
 				cout << "\nApplying BlackAndWhite Filter...\n";
 				blackAndWhite(currentImage);
 				isModified = true;
 				cout << "BlackAndWhite applied successfully!\n";
 				break;
-			case 8:
-				cout << "\nApplying Rotate Filter...\n";
-				rotate(currentImage);
+			case 3:
+				cout << "\nApplying Invert Filter...\n";
+				invert(currentImage);
 				isModified = true;
-				cout << "Rotate applied successfully!\n";
+				cout << "Invert applied successfully!\n";
 				break;
-			case 9:
+			case 4:
+				cout << "\nApplying AddFrame Filter...\n";
+				addFrame(currentImage);
+				isModified = true;
+				cout << "AddFrame applied successfully!\n";
+				break;
+			case 5:
 				cout << "\nApplying Flip Filter...\n";
 				flip(currentImage);
 				isModified = true;
 				cout << "Flip applied successfully!\n";
 				break;
-			case 10:
+			case 6:
+				cout << "\nApplying Rotate Filter...\n";
+				rotate(currentImage);
+				isModified = true;
+				cout << "Rotate applied successfully!\n";
+				break;
+			case 7:
+				cout << "\nApplying Darken or Lighten Filter...\n";
+				darkenAndLighten(currentImage);
+				isModified = true;
+				cout << "Darken or Lighten applied successfully!\n";
+				break;
+			case 8:
 				cout << "\nApplying ReSize Filter...\n";
 				reSize(currentImage);
 				isModified = true;
 				cout << "ReSize applied successfully!\n";
+				break;
+			case 9:
+				cout << "\nApplying MergeImage Filter...\n";
+				mergeImages(currentImage);
+				isModified = true;
+				cout << "MergeImage applied successfully!\n";
+				break;
+			case 10:
+				cout << "\nApplying Detected Filter...\n";
+				detected(currentImage);
+				isModified = true;
+				cout << "Detected applied successfully!\n";
 				break;
 			case 11:
 				cout << "\nApplying Crop Filter...\n";
@@ -738,16 +868,16 @@ void handleApplyFilter(Image& currentImage, bool& isModified){
 				cout << "Crop applied successfully!\n";
 				break;
 			case 12:
-				cout << "\nApplying WanoPurple Filter...\n";
-				wanoPurple(currentImage);
+				cout << "\nApplying Blur Filter...\n";
+				blur(currentImage);
 				isModified = true;
-				cout << "WanoPurple applied successfully!\n";
+				cout << "Blur applied successfully!\n";
 				break;
 			case 13:
-				cout << "\nApplying Detected Filter...\n";
-				detected(currentImage);
+				cout << "\nApplying LandOfWano Filter...\n";
+				landOfWano(currentImage);
 				isModified = true;
-				cout << "Detected applied successfully!\n";
+				cout << "LandOfWano applied successfully!\n";
 				break;
 			case 14:
 				cout << "\nApplying Cinema Filter...\n";
@@ -756,6 +886,18 @@ void handleApplyFilter(Image& currentImage, bool& isModified){
 				cout << "Cinema applied successfully!\n";
 				break;
 			case 15:
+				cout << "\nApplying WanoPurple Filter...\n";
+				wanoPurple(currentImage);
+				isModified = true;
+				cout << "WanoPurple applied successfully!\n";
+				break;
+			case 16:
+				cout << "\nApplying Infrared Filter...\n";
+				infrared(currentImage);
+				isModified = true;
+				cout << "Infrared applied successfully!\n";
+				break;
+			case 17:
 				cout << "Returning to Main Menu...\n";
 				break;
 			default:

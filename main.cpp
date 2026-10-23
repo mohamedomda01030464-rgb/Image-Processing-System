@@ -1,27 +1,25 @@
 // This file is designed to applying different filters on images and called Image Processing System
 
-/* 
----                Team Works                ---
-
-Name: Mohamed Adel         ID: 20250572    S19 , S20
-Name: Ziad Waleed          ID: 20250265    S19 , S20
-Name: Amr Maher            ID: 20250455    S19 , S20
-Name: Mohamed Hassaan      ID: 20250555	   S19 , S20
-*/
+// This is link google drive that contain docs file and video that explain how to work this program -> https://drive.google.com/drive/folders/1rnZG3cXsE96pX53ffWOF_3bQUNUzLdNN?usp=drive_link
 
 /*
- ---            Whose made filters            ---
+-----------------------------------------------------------------------------
+Course : CS213 Object Oriented Programming, FCAI, Cairo University
+Doctor : Dr. Mohammad El-Ramly
+Assignment 1 - Part 2 (Beast Level: 18 filters + GUI)
 
-1. Mohamed Adel       ->	  4 , 8 , 12 , 16
-2. Ziad Waleed        ->      1 , 5 , 9 , 13
-3. Amr Maher          ->      2 , 6 , 10 , 14
-4. Mohamed Hassaan    ->      3 , 7 , 11 , 15
+Name                 ID          Section     Filters (original menu numbers)
+-------------------  ----------  ----------  ------------------------------
+Mohamed Adel         20250572    S19 , S20   4 (Frame), 8 (Resize), 12 (Blur), 16 (Infrared)
+Ziad Waleed          20250265    S19 , S20   1 (GrayScale), 5 (Flip), 9 (Merge), 13 (Land Of Wano)
+Amr Maher            20250455    S19 , S20   2 (Black And White), 6 (Rotate), 10 (Detect Edges), 14 (Cinema / Old TV)
+Mohamed Hassaan      20250555    S19 , S20   3 (Invert), 7 (Darken/Lighten), 11 (Crop), 15 (Wano Purple)
 
-1.	Image Skewing Filter made by Mohamed Adel & Ziad Waleed & Amr Maher
-2.	Oil painting Filter made by Amr Maher & Mohamed Hassaan & Amr maher
-3.	GUI is made by all members
-
-
+Extra filters (Beast Level):
+- 17 Oil Painting : Amr Maher & Mohamed Hassaan
+- 18 Skew Image   : Mohamed Adel & Ziad Waleed & Amr Maher
+GUI (Qt Widgets) : made by all team members.
+Menu : made by all team members.
 */
 
 #include <iostream>
@@ -172,7 +170,6 @@ void darkenAndLighten(Image& currentImage) {
 			cout << "Invalid Input, Please choose correct number\n";
 		}
 	}
-
     
 }
 
@@ -521,7 +518,6 @@ inline int clamp(int v, int low, int high) {
     return v;
 }
 
-
 void detected(Image& currentImage){
     int height = currentImage.height;
     int width  = currentImage.width;
@@ -575,7 +571,6 @@ void detected(Image& currentImage){
     currentImage = result;
     cout << "Done (Detect Image Edges Filter)\n";
 }
-
 
 void jitterRows(Image& img, int maxShift, int rate) {
     Image copy = img;
@@ -775,9 +770,90 @@ void landOfWano(Image& currentImage) {
     cout << "Done (Land Of Wano Filter)\n";
 }
 
+void oilPainting(Image& currentImage){
+    int radius, levels;
+    cout << "Enter brush radius (1 to 10): ";
+    cin >> radius;
+    cout << "Enter intensity levels (4 to 50, lower = more painted look): ";
+    cin >> levels;
+    radius = clamp(radius, 1, 10);
+    levels = clamp(levels, 4, 50);
+
+    const int w = currentImage.width;
+    const int h = currentImage.height;
+    Image src = currentImage;
+    vector<int> cnt(levels), sr(levels), sg(levels), sb(levels);
+
+    for (int y = 0; y < h; y++){
+        for (int x = 0; x < w; x++){
+            fill(cnt.begin(), cnt.end(), 0);
+            fill(sr.begin(), sr.end(), 0);
+            fill(sg.begin(), sg.end(), 0);
+            fill(sb.begin(), sb.end(), 0);
+
+            for (int dy = -radius; dy <= radius; dy++){
+                int ny = clamp(y + dy, 0, h - 1);
+                for (int dx = -radius; dx <= radius; dx++){
+                    int nx = clamp(x + dx, 0, w - 1);
+                    int r = src(nx, ny, 0);
+                    int g = src(nx, ny, 1);
+                    int b = src(nx, ny, 2);
+                    int bin = ((r + g + b) / 3) * (levels - 1) / 255;
+                    cnt[bin]++;
+                    sr[bin] += r;
+                    sg[bin] += g;
+                    sb[bin] += b;
+                }
+            }
+
+            int best = 0;
+            for (int i = 1; i < levels; i++)
+                if (cnt[i] > cnt[best]) best = i;
+
+            currentImage(x, y, 0) = sr[best] / cnt[best];
+            currentImage(x, y, 1) = sg[best] / cnt[best];
+            currentImage(x, y, 2) = sb[best] / cnt[best];
+        }
+    }
+    cout << "Done (Oil Painting Filter)\n";
+}
+
+void skewImage(Image& currentImage){
+    int angle;
+    cout << "Enter skew angle in degrees (-60 to 60, negative skews left): ";
+    cin >> angle;
+    if (angle < -60 || angle > 60 || angle == 0){
+        cout << "Invalid angle! Skew canceled.\n";
+        return;
+    }
+
+    const double pi = 3.14159265358979323846;
+    const double t = tan(angle * pi / 180.0);
+    const int w = currentImage.width;
+    const int h = currentImage.height;
+    const int extra = (int)ceil(fabs(t) * (h - 1));
+    const int newW = w + extra;
+
+    Image result(newW, h);
+    for (int x = 0; x < newW; x++)
+        for (int y = 0; y < h; y++)
+            for (int k = 0; k < 3; k++)
+                result(x, y, k) = 255;          // white background
+
+    for (int y = 0; y < h; y++){
+        double shift = (t >= 0) ? fabs(t) * (h - 1 - y) : fabs(t) * y;
+        int s = (int)lround(shift);
+        for (int x = 0; x < w; x++)
+            for (int k = 0; k < 3; k++)
+                result(x + s, y, k) = currentImage(x, y, k);
+    }
+    currentImage = result;
+    cout << "Done (Skew Filter)\n";
+}
+
 void handleApplyFilter(Image& currentImage, bool& isModified){
 	int filterChoice = 0;
-	while(filterChoice != 17){
+	while(filterChoice != 19){
 		cout << "\n============================================================================================\n\n";
 		cout << "---                                     Filters Menu                                     ---\n\n";
 		cout << "1- GrayScale Filter\n\n";
@@ -796,7 +872,9 @@ void handleApplyFilter(Image& currentImage, bool& isModified){
 		cout << "14- Cinema Filter\n\n";
 		cout << "15- WanoPurple Filter\n\n";
 		cout << "16- Infrared Filter\n\n";
-		cout << "17- Back to Main Menu\n\n";
+		cout << "17- Oil Painting Filter\n\n";
+		cout << "18- Skew Filter\n\n";
+		cout << "19- Back to Main Menu\n\n";
 		cout << "============================================================================================\n\n";
 		cout << "Choose filter number: ";
 		cin >> filterChoice;
@@ -898,6 +976,17 @@ void handleApplyFilter(Image& currentImage, bool& isModified){
 				cout << "Infrared applied successfully!\n";
 				break;
 			case 17:
+				cout << "\nApplying Oil Painting Filter...\n";
+				oilPainting(currentImage);
+				isModified = true;
+				cout << "Oil Painting applied successfully!\n";
+				break;
+			case 18:
+				cout << "\nApplying Skew Filter...\n";
+				skewImage(currentImage);
+				isModified = true;
+				break;
+			case 19:
 				cout << "Returning to Main Menu...\n";
 				break;
 			default:
@@ -960,3 +1049,4 @@ int main() {
 	}
 	return 0;
 }
+
